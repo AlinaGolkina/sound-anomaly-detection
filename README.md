@@ -1,73 +1,39 @@
-# Template for Data Science Project
+# Sound_anomaly_detection
+## Problem
+## Datasets
+  ### 1. MIMII
+  
+#### Sound dataset for malfunctioning industrial machine investigation and inspection
 
-This repo aims to give a robust starting point to any Data Science related
-project.
+[1] Harsh Purohit, Ryo Tanabe, Kenji Ichige, Takashi Endo, Yuki Nikaido, Kaori Suefusa, and Yohei Kawaguchi, “MIMII Dataset: Sound Dataset for Malfunctioning Industrial Machine Investigation and Inspection,” arXiv preprint arXiv:1909.09347, 2019.
 
-It contains readymade tools setup to start adding dependencies and coding.
+[2] Harsh Purohit, Ryo Tanabe, Kenji Ichige, Takashi Endo, Yuki Nikaido, Kaori Suefusa, and Yohei Kawaguchi, “MIMII Dataset: Sound Dataset for Malfunctioning Industrial Machine Investigation and Inspection,” in Proc. 4th Workshop on Detection and Classification of Acoustic Scenes and Events (DCASE), 2019.
+  ### 2. MIMII DUE
+  
+#### Sound dataset for malfunctioning industrial machine investigation and inspection with domain shifts due to changes in operational and environmental conditions
+  
+[1] Yohei Kawaguchi, Keisuke Imoto, Yuma Koizumi, Noboru Harada, Daisuke Niizumi, Kota Dohi, Ryo Tanabe, Harsh Purohit, and Takashi Endo, "Description and Discussion on DCASE 2021 Challenge Task 2: Unsupervised Anomalous Sound Detection for Machine Condition Monitoring under Domain Shifted Conditions," in arXiv e-prints: 2106.04492, 2021. URL
 
-To get yourself familiar with tools used here watch
-[my talk on Data Science project setup (in Russian)](https://youtu.be/jLIAiDMyseQ)
-
-**If you use this repo as a template - leave a star please** because template
-usages don't count in Forks.
-
-## Workflow
-
-Experiments and technology discovery are usualy performed on Jupyter Notebooks.
-For them `notebooks` directory is reserved. More info on working with Notebooks
-could be found in `notebooks/README.md`.
-
-More mature part of pipeline (functions, classes, etc) are stored in `.py` files
-in main package directory (by default `ds_project`).
-
-## What to change?
-
-- project name (default: `ds_project`)
-  - in `pyproject.toml` - tool.poetry.name
-  - main project directory (`ds_project`)
-  - test in `tests` directory
-- line length (default: `90`) [Why 90?](https://youtu.be/esZLCuWs_2Y?t=1287)
-  - in `pyproject.toml` in blocks
-    - black
-    - isort
-  - in `setup.cfg` for `flake8`
-  - in `.pre-commit-config.yaml` for `prettier`
-
-## How to setup an environment?
-
-This template use `poetry` to manage dependencies of your project. They
-
-First you need to
-[install poetry](https://python-poetry.org/docs/#installation).
-
-Then if you use `conda` (recommended) to manage environments (to use regular
-virtualenvenv just skip this step):
-
-- tell `poetry` not to create new virtualenv for you
-
-  (instead `poetry` will use currently activated virtualenv):
-
-  `poetry config virtualenvs.create false`
-
-- create new `conda` environment for your project (change env name for your
-  desired one):
-
-  `conda create -n ds_project python=3.9`
-
-- actiave environment:
-
-  `conda activate ds_project`
-
-Now you are ready to add dependencies to your project. For this use
-[`add` command](https://python-poetry.org/docs/cli/#add):
-
-`poetry add scikit-learn torch <any_package_you_need>`
-
-Next run `poetry install` to check your final state are even with configs.
-
-After that add changes to git and commit them
-`git add pyproject.toml poetry.lock`
-
-Finally add `pre-commit` hooks to git: `pre-commit install`
-
-At this step you are ready to write clean reproducible code!
+[2] Ryo Tanabe, Harsh Purohit, Kota Dohi, Takashi Endo, Yuki Nikaido, Toshiki Nakamura, and Yohei Kawaguchi, "MIMII DUE: Sound Dataset for Malfunctioning Industrial Machine Investigation and Inspection with Domain Shifts due to Changes in Operational and Environmental Conditions," in arXiv e-prints: 2105.02702, 2021. URL
+  
+  
+  ### 3. ToyADMOS2
+  
+  #### A large-scale dataset for anomaly detection in machine operating sounds (ADMOS), designed for evaluating systems under domain-shift conditions
+  
+[1] Noboru Harada, Daisuke Niizumi, Daiki Takeuchi, Yasunori Ohishi, Masahiro Yasuda, and Shoichiro Saito, "ToyADMOS2: Another dataset of miniature-machine operating sounds for anomalous sound detection under domain shift conditions," 2021. https://arxiv.org/abs/2106.02369
+  
+  ### 4. NAB datasets
+  #### The Numenta Anomaly Benchmark (NAB) datasets for research in streaming anomaly detection
+  NAB is a novel benchmark for evaluating algorithms for anomaly detection in streaming, real-time applications. https://github.com/numenta/NAB
+  
+  ### 5. Bosch CNC Machining Dataset
+  
+  #### A collection of real-world industrial vibration data collected from a brownfield CNC milling machine
+  
+  [1] Smart Data Collection System for Brownfield CNC Milling Machines: A New Benchmark Dataset for Data-Driven Machine Monitoring
+  https://doi.org/10.1016/j.procir.2022.04.022
+  
+  https://github.com/boschresearch/CNC_Machining
+  
+## Key Algorithms
