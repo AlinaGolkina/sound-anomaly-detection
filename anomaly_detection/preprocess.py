@@ -1,6 +1,3 @@
-import librosa.core
-import librosa.display
-import librosa.feature
 import numpy as np
 import pandas as pd
 from pyod.models.gmm import GMM
@@ -8,10 +5,9 @@ from pyod.models.iforest import IForest
 from pyod.models.knn import KNN
 from pyod.models.lof import LOF
 from pyod.models.ocsvm import OCSVM
-from pyod.utils.data import evaluate_print, generate_data
 from sklearn import metrics
-from sklearn.model_selection import StratifiedKFold, train_test_split
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.model_selection import StratifiedKFold
+from sklearn.preprocessing import StandardScaler
 
 
 # stratified dataset split
@@ -47,9 +43,9 @@ def mix_data(X_list: list, y_list: list):
     X_all = np.concatenate(X_list)
     y_all = np.concatenate(y_list)
     # отделим Val для итоговой классификации по outlier score
-    X, X_val, y, y_val = StratifiedKF(X_all, y_all)
+    X, X_val, y, y_val = stratifiedkf(X_all, y_all)
     # отделим еще test для валидации модели
-    X_train, X_test, y_train, y_test = StratifiedKF(X, y)
+    X_train, X_test, y_train, y_test = stratifiedkf(X, y)
 
     return X_train, X_test, X_val, y_train, y_test, y_val
 
@@ -62,46 +58,6 @@ def scaling(X_train, X_test, X_val=None):
     X_val = scaler.transform(X_val)
 
     return X_train, X_test, X_val
-
-
-def anomaly_detection(model_name, X_train, X_test, y_train, y_test):
-
-    clf = models[model_name]
-    clf.fit(X_train)
-
-    # get the prediction labels and outlier scores of the training data
-    y_train_pred = clf.labels_  # binary labels (0: inliers, 1: outliers)
-    y_train_scores = clf.decision_scores_  # raw outlier scores
-
-    # get the prediction on the test data
-    y_test_pred = clf.predict(X_test)  # outlier labels (0 or 1)
-    y_test_scores = clf.decision_function(X_test)  # outlier scores
-
-    # metrics
-    accuracy = metrics.accuracy_score(y_test, y_test_pred)
-    precision = metrics.precision_score(y_test, y_test_pred)
-    recall = metrics.recall_score(y_test, y_test_pred)
-    f1_score = metrics.f1_score(y_test, y_test_pred)
-    scores = pd.DataFrame(
-        [
-            {
-                "Dataset": None,
-                "Extraction_type": None,
-                "Model_name": model_name,
-                "Accuracy": accuracy,
-                "Precision": precision,
-                "Recall": recall,
-                "F1_score": f1_score,
-            }
-        ]
-    )
-    # evaluate and print the results
-    report = metrics.classification_report(y_test, y_test_pred)
-    # print(f'On Test Data:')
-    evaluate_print(model_name, y_test, y_test_scores)
-    # print(f'\n{report} \n')
-
-    return scores
 
 
 def pyod_classification_report(
@@ -160,7 +116,7 @@ def pyod_classification_report(
 
         # get the prediction on the test data
         y_test_pred = clf.predict(X_test)  # outlier labels (0 or 1)
-        y_test_scores = clf.decision_function(X_test)  # outlier scores
+        # y_test_scores = clf.decision_function(X_test)  # outlier scores
 
         # metrics
         accuracy = metrics.accuracy_score(y_test, y_test_pred)
