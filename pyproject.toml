@@ -1,13 +1,13 @@
 [tool.poetry]
-name = "ds_project"
+name = "anomaly_detection"
 version = "0.1.0"
-description = "Template repository to start your Data Science project from"
-authors = ["Vladilav Goncharenko <vladislav.goncharenko@phystech.edu>"]
+description = "thesis project repository Sound Anomaly Detection"
+authors = ["Alina Golkina"]
 maintainers = ["Vladislav Goncharenko <vladislav.goncharenko@phystech.edu>"]
 readme = "README.md"
-repository = "https://github.com/v-goncharenko/data-science-template"
+repository = "https://github.com/AlinaGolkina/Sound_anomaly_detection"
 documentation = "TBD"
-keywords = ["reproducibility", "data science", "template"]
+keywords = ["anomaly detection", "data science"]
 license = "Apache-2.0"
 
 [tool.poetry.dependencies]
