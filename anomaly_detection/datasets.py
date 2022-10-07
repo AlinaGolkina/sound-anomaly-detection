@@ -128,13 +128,11 @@ class Mimii_due(Dataset):
 
         return file_list, labels
 
-    ########################################################################
-    # feature extractor
-    ########################################################################
-
     @staticmethod
     def _feature_extraction_from_file(file, extraction_type, n_mfcc):
-
+        """
+        feature extractor
+        """
         y, sr = librosa.load(file, sr=16000, mono=True)
 
         if extraction_type == "aggregate_MFCC":
@@ -157,11 +155,6 @@ class Mimii_due(Dataset):
             cent_std = np.std(librosa.feature.spectral_centroid(y=y, sr=sr).T, axis=0)[0]
             cent_max = np.max(librosa.feature.spectral_centroid(y=y, sr=sr).T, axis=0)[0]
             cent_min = np.min(librosa.feature.spectral_centroid(y=y, sr=sr).T, axis=0)[0]
-
-            features = np.concatenate(
-                (mfccs_mean, mfccs_std, mfccs_max, mfccs_min), axis=0
-            )
-
             cent_skew = scipy.stats.skew(
                 librosa.feature.spectral_centroid(y=y, sr=sr).T, axis=0
             )[0]
@@ -188,7 +181,17 @@ class Mimii_due(Dataset):
                     mfccs_max,
                     mfccs_min,
                     np.array(
-                        (cent_skew, rolloff_mean, rolloff_std, rolloff_max, rolloff_min)
+                        (
+                            cent_mean,
+                            cent_skew,
+                            rolloff_mean,
+                            cent_std,
+                            cent_max,
+                            cent_min,
+                            rolloff_std,
+                            rolloff_max,
+                            rolloff_min,
+                        )
                     ),
                 ),
                 axis=0,
@@ -215,31 +218,29 @@ class Mimii_due(Dataset):
                     self.file_list[idx], self.extraction_type, self.n_mfcc
                 )
                 vectors = vectors[::1, :]
+                n_objs = vectors.shape[0]
                 if idx == 0:
                     self.data = np.zeros(
                         (
-                            len(self.file_list) * vectors.shape[0],
+                            len(self.file_list) * n_objs,
                             1,
                             self.n_mfcc,
                             vectors.shape[-1],
                         ),
                         float,
                     )
-                self.data[
-                    vectors.shape[0] * idx : vectors.shape[0] * (idx + 1), :
-                ] = vectors
+                self.data[n_objs * idx : n_objs * (idx + 1), :] = vectors
         else:
             for idx in tqdm(range(len(self.file_list))):
                 vectors = Mimii_due._feature_extraction_from_file(
                     self.file_list[idx], self.extraction_type, self.n_mfcc
                 )
+                n_objs = vectors.shape[0]
                 if idx == 0:
                     self.data = np.zeros(
-                        (len(self.file_list) * vectors.shape[0], vectors.shape[1]), float
+                        (len(self.file_list) * n_objs, vectors.shape[1]), float
                     )
-                self.data[
-                    vectors.shape[0] * idx : vectors.shape[0] * (idx + 1), :
-                ] = vectors
+                self.data[n_objs * idx : n_objs * (idx + 1), :] = vectors
 
         return self.data
 
@@ -362,11 +363,6 @@ class Toyadmos(Dataset):
             cent_std = np.std(librosa.feature.spectral_centroid(y=y, sr=sr).T, axis=0)[0]
             cent_max = np.max(librosa.feature.spectral_centroid(y=y, sr=sr).T, axis=0)[0]
             cent_min = np.min(librosa.feature.spectral_centroid(y=y, sr=sr).T, axis=0)[0]
-
-            features = np.concatenate(
-                (mfccs_mean, mfccs_std, mfccs_max, mfccs_min), axis=0
-            )
-
             cent_skew = scipy.stats.skew(
                 librosa.feature.spectral_centroid(y=y, sr=sr).T, axis=0
             )[0]
@@ -393,7 +389,7 @@ class Toyadmos(Dataset):
                     mfccs_max,
                     mfccs_min,
                     np.array(
-                        (cent_skew, rolloff_mean, rolloff_std, rolloff_max, rolloff_min)
+                        (cent_mean, cent_std, cent_max, cent_min, cent_skew, rolloff_mean, rolloff_std, rolloff_max, rolloff_min)
                     ),
                 ),
                 axis=0,
