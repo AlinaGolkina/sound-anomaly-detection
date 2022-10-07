@@ -389,7 +389,17 @@ class Toyadmos(Dataset):
                     mfccs_max,
                     mfccs_min,
                     np.array(
-                        (cent_mean, cent_std, cent_max, cent_min, cent_skew, rolloff_mean, rolloff_std, rolloff_max, rolloff_min)
+                        (
+                            cent_mean,
+                            cent_std,
+                            cent_max,
+                            cent_min,
+                            cent_skew,
+                            rolloff_mean,
+                            rolloff_std,
+                            rolloff_max,
+                            rolloff_min,
+                        )
                     ),
                 ),
                 axis=0,
