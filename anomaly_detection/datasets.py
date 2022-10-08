@@ -8,7 +8,7 @@ from torch.utils.data import Dataset
 from tqdm import tqdm
 
 
-class Mimii_due(Dataset):
+class MimiiDue(Dataset):
     """Parameters:
     -----------
     target_dir : str
@@ -214,7 +214,7 @@ class Mimii_due(Dataset):
 
             for idx in tqdm(range(len(self.file_list))):
 
-                vectors = Mimii_due._feature_extraction_from_file(
+                vectors = MimiiDue._feature_extraction_from_file(
                     self.file_list[idx], self.extraction_type, self.n_mfcc
                 )
                 vectors = vectors[::1, :]
@@ -232,7 +232,7 @@ class Mimii_due(Dataset):
                 self.data[n_objs * idx : n_objs * (idx + 1), :] = vectors
         else:
             for idx in tqdm(range(len(self.file_list))):
-                vectors = Mimii_due._feature_extraction_from_file(
+                vectors = MimiiDue._feature_extraction_from_file(
                     self.file_list[idx], self.extraction_type, self.n_mfcc
                 )
                 n_objs = vectors.shape[0]
@@ -245,7 +245,7 @@ class Mimii_due(Dataset):
         return self.data
 
 
-class Toyadmos(Dataset):
+class ToyAdmos(Dataset):
     """Parameters:
     -----------
     target_dir : str
@@ -424,7 +424,7 @@ class Toyadmos(Dataset):
 
             for idx in tqdm(range(len(self.file_list))):
 
-                vectors = Toyadmos._feature_extraction_from_file(
+                vectors = ToyAdmos._feature_extraction_from_file(
                     self.file_list[idx], self.extraction_type, self.n_mfcc
                 )
                 vectors = vectors[::1, :]
@@ -444,7 +444,7 @@ class Toyadmos(Dataset):
 
         else:
             for idx in tqdm(range(len(self.file_list))):
-                vectors = Toyadmos._feature_extraction_from_file(
+                vectors = ToyAdmos._feature_extraction_from_file(
                     self.file_list[idx], self.extraction_type, self.n_mfcc
                 )
                 n_objs = vectors.shape[0]
