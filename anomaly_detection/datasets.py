@@ -74,6 +74,7 @@ class MimiiDue(Dataset):
         mode: str = "development",
         extraction_type: str = "amplitude",
         n_mfcc: int = 40,
+        n_mel: int = 128
     ):
         self.target_dir = target_dir
         self.section_name = section_name
@@ -81,6 +82,7 @@ class MimiiDue(Dataset):
         self.mode = mode
         self.extraction_type = extraction_type
         self.n_mfcc = n_mfcc
+        self.n_mel = n_mel
 
         self.samples = []
         self.file_list, self.labels = self._init_file_list_generator()
@@ -129,7 +131,7 @@ class MimiiDue(Dataset):
         return file_list, labels
 
     @staticmethod
-    def _feature_extraction_from_file(file, extraction_type, n_mfcc):
+    def _feature_extraction_from_file(file, extraction_type, n_mfcc, n_mel):
         """
         feature extractor
         """
@@ -201,8 +203,17 @@ class MimiiDue(Dataset):
         elif extraction_type == "amplitude":
             features = y.reshape(1, -1)
 
-        elif extraction_type == "melspectrogram":
+        elif extraction_type == "mfccs":
             features = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=n_mfcc)
+            features = features.reshape(-1, features.shape[0], features.shape[1])
+            
+        elif extraction_type == "melspectrogram":
+            features = librosa.feature.melspectrogram(y=y,sr=sr,
+                                                 n_fft=1024,
+                                                 n_mels=n_mel,
+                                                 win_length=1024,
+                                                 hop_length=512,
+                                                 power=2.0)
             features = features.reshape(-1, features.shape[0], features.shape[1])
         return features
 
@@ -215,7 +226,28 @@ class MimiiDue(Dataset):
             for idx in tqdm(range(len(self.file_list))):
 
                 vectors = MimiiDue._feature_extraction_from_file(
-                    self.file_list[idx], self.extraction_type, self.n_mfcc
+                    self.file_list[idx], self.extraction_type, self.n_mfcc, self.n_mel
+                )
+                vectors = vectors[::1, :]
+                n_objs = vectors.shape[0]
+                if idx == 0:
+                    self.data = np.zeros(
+                        (
+                            len(self.file_list) * n_objs,
+                            1,
+                            self.n_mel,
+                            vectors.shape[-1],
+                        ),
+                        float,
+                    )
+                self.data[n_objs * idx : n_objs * (idx + 1), :] = vectors
+                
+        elif self.extraction_type == "mfccs":
+
+            for idx in tqdm(range(len(self.file_list))):
+
+                vectors = MimiiDue._feature_extraction_from_file(
+                    self.file_list[idx], self.extraction_type, self.n_mfcc, self.n_mel
                 )
                 vectors = vectors[::1, :]
                 n_objs = vectors.shape[0]
@@ -233,7 +265,7 @@ class MimiiDue(Dataset):
         else:
             for idx in tqdm(range(len(self.file_list))):
                 vectors = MimiiDue._feature_extraction_from_file(
-                    self.file_list[idx], self.extraction_type, self.n_mfcc
+                    self.file_list[idx], self.extraction_type, self.n_mfcc, self.n_mel
                 )
                 n_objs = vectors.shape[0]
                 if idx == 0:
@@ -292,17 +324,21 @@ class ToyAdmos(Dataset):
 
     def __init__(
         self,
-        target_dir,
-        dir_name_normal,
-        dir_name_anomaly,
-        extraction_type="amplitude",
-        n_mfcc=40,
+        target_dir: str,
+        dir_name_normal: str,
+        dir_name_anomaly: str,
+        extraction_type: str = "amplitude",
+        n_mfcc: int = 40,
+        n_mel: int = 128
     ):
-        self.extraction_type = extraction_type
+        
         self.target_dir = target_dir
         self.dir_name_normal = dir_name_normal
         self.dir_name_anomaly = dir_name_anomaly
+        self.extraction_type = extraction_type
         self.n_mfcc = n_mfcc
+        self.n_mel = n_mel
+        
         self.samples = []
         self.labels = []
         self.file_list = []
@@ -310,10 +346,10 @@ class ToyAdmos(Dataset):
         self.data = []
         self._file_list_to_data()
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.file_list)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx) -> tuple:
         return self.data[idx], self.labels[idx]
 
     def __init_file_list_generator(self):
@@ -339,7 +375,7 @@ class ToyAdmos(Dataset):
         return self.file_list, self.labels
 
     @staticmethod
-    def _feature_extraction_from_file(file, extraction_type, n_mfcc):
+    def _feature_extraction_from_file(file, extraction_type, n_mfcc, n_mel):
         """feature extractor"""
         y, sr = librosa.load(file, sr=16000, mono=True)
 
@@ -409,9 +445,19 @@ class ToyAdmos(Dataset):
         elif extraction_type == "amplitude":
             features = y.reshape(1, -1)
 
-        elif extraction_type == "melspectrogram":
+        elif extraction_type == "mfccs":
             features = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=n_mfcc)
             features = features.reshape(-1, features.shape[0], features.shape[1])
+            
+        elif extraction_type == "melspectrogram":
+            features = librosa.feature.melspectrogram(y=y,sr=sr,
+                                                 n_fft=1024,
+                                                 n_mels=n_mel,
+                                                 win_length=1024,
+                                                 hop_length=512,
+                                                 power=2.0)
+            features = features.reshape(-1, features.shape[0], features.shape[1])
+            
         return features
 
     ########################################################################
@@ -425,7 +471,7 @@ class ToyAdmos(Dataset):
             for idx in tqdm(range(len(self.file_list))):
 
                 vectors = ToyAdmos._feature_extraction_from_file(
-                    self.file_list[idx], self.extraction_type, self.n_mfcc
+                    self.file_list[idx], self.extraction_type, self.n_mfcc, self.n_mel
                 )
                 vectors = vectors[::1, :]
                 if idx == 0:
@@ -433,7 +479,7 @@ class ToyAdmos(Dataset):
                         (
                             len(self.file_list) * vectors.shape[0],
                             1,
-                            self.n_mfcc,
+                            self.n_mel,
                             vectors.shape[-1],
                         ),
                         float,
@@ -441,11 +487,32 @@ class ToyAdmos(Dataset):
                 self.data[
                     vectors.shape[0] * idx : vectors.shape[0] * (idx + 1), :
                 ] = vectors
+                
+        elif self.extraction_type == "mfccs":
+
+            for idx in tqdm(range(len(self.file_list))):
+
+                vectors = MimiiDue._feature_extraction_from_file(
+                    self.file_list[idx], self.extraction_type, self.n_mfcc, self.n_mel
+                )
+                vectors = vectors[::1, :]
+                n_objs = vectors.shape[0]
+                if idx == 0:
+                    self.data = np.zeros(
+                        (
+                            len(self.file_list) * n_objs,
+                            1,
+                            self.n_mfcc,
+                            vectors.shape[-1],
+                        ),
+                        float,
+                    )
+                self.data[n_objs * idx : n_objs * (idx + 1), :] = vectors
 
         else:
             for idx in tqdm(range(len(self.file_list))):
                 vectors = ToyAdmos._feature_extraction_from_file(
-                    self.file_list[idx], self.extraction_type, self.n_mfcc
+                    self.file_list[idx], self.extraction_type, self.n_mfcc, self.n_mel
                 )
                 n_objs = vectors.shape[0]
                 if idx == 0:
