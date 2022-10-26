@@ -2,10 +2,11 @@
 model.py from https://github.com/liuyoude/STgram-MFN
 modification made on the basis of link:https://github.com/Xiaoccer/MobileFaceNet_Pytorch
 """
-from torch import nn
+import math
+
 import torch
 import torch.nn.functional as F
-import math
+from torch import nn
 from torch.nn import Parameter
 
 
@@ -20,13 +21,19 @@ class Bottleneck(nn.Module):
             nn.BatchNorm2d(inp * expansion),
             nn.PReLU(inp * expansion),
             # nn.ReLU(inplace=True),
-
             # dw
-            nn.Conv2d(inp * expansion, inp * expansion, 3, stride, 1, groups=inp * expansion, bias=False),
+            nn.Conv2d(
+                inp * expansion,
+                inp * expansion,
+                3,
+                stride,
+                1,
+                groups=inp * expansion,
+                bias=False,
+            ),
             nn.BatchNorm2d(inp * expansion),
             nn.PReLU(inp * expansion),
             # nn.ReLU(inplace=True),
-
             # pw-linear
             nn.Conv2d(inp * expansion, oup, 1, 1, 0, bias=False),
             nn.BatchNorm2d(oup),
@@ -66,7 +73,7 @@ Mobilefacenet_bottleneck_setting = [
     [4, 128, 1, 2],
     [2, 128, 6, 1],
     [4, 128, 1, 2],
-    [2, 128, 2, 1]
+    [2, 128, 2, 1],
 ]
 
 Mobilenetv2_bottleneck_setting = [
@@ -82,10 +89,9 @@ Mobilenetv2_bottleneck_setting = [
 
 
 class MobileFaceNet(nn.Module):
-    def __init__(self,
-                 num_class,
-                 bottleneck_setting=Mobilefacenet_bottleneck_setting,
-                 arcface=None):
+    def __init__(
+        self, num_class, bottleneck_setting=Mobilefacenet_bottleneck_setting, arcface=None
+    ):
         super(MobileFaceNet, self).__init__()
 
         self.conv1 = ConvBlock(2, 64, 3, 2, 1)
@@ -108,7 +114,7 @@ class MobileFaceNet(nn.Module):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2. / n))
+                m.weight.data.normal_(0, math.sqrt(2.0 / n))
             elif isinstance(m, nn.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
@@ -144,13 +150,19 @@ class TgramNet(nn.Module):
     def __init__(self, num_layer=3, mel_bins=128, win_len=1024, hop_len=512):
         super(TgramNet, self).__init__()
         # if "center=True" of stft, padding = win_len / 2
-        self.conv_extrctor = nn.Conv1d(1, mel_bins, win_len, hop_len, win_len // 2, bias=False)
+        self.conv_extrctor = nn.Conv1d(
+            1, mel_bins, win_len, hop_len, win_len // 2, bias=False
+        )
         self.conv_encoder = nn.Sequential(
-            *[nn.Sequential(
-                nn.LayerNorm(313),
-                nn.LeakyReLU(0.2, inplace=True),
-                nn.Conv1d(mel_bins, mel_bins, 3, 1, 1, bias=False)
-            ) for _ in range(num_layer)])
+            *[
+                nn.Sequential(
+                    nn.LayerNorm(313),
+                    nn.LeakyReLU(0.2, inplace=True),
+                    nn.Conv1d(mel_bins, mel_bins, 3, 1, 1, bias=False),
+                )
+                for _ in range(num_layer)
+            ]
+        )
 
     def forward(self, x):
         out = self.conv_extrctor(x)
@@ -159,18 +171,21 @@ class TgramNet(nn.Module):
 
 
 class STgramMFN(nn.Module):
-    def __init__(self, num_class,
-                 c_dim=128,
-                 win_len=1024,
-                 hop_len=512,
-                 bottleneck_setting=Mobilefacenet_bottleneck_setting,
-                 arcface=None):
+    def __init__(
+        self,
+        num_class,
+        c_dim=128,
+        win_len=1024,
+        hop_len=512,
+        bottleneck_setting=Mobilefacenet_bottleneck_setting,
+        arcface=None,
+    ):
         super(STgramMFN, self).__init__()
         self.arcface = arcface
         self.tgramnet = TgramNet(mel_bins=c_dim, win_len=win_len, hop_len=hop_len)
-        self.mobilefacenet = MobileFaceNet(num_class=num_class,
-                                           bottleneck_setting=bottleneck_setting,
-                                           arcface=arcface)
+        self.mobilefacenet = MobileFaceNet(
+            num_class=num_class, bottleneck_setting=bottleneck_setting, arcface=arcface
+        )
 
     def get_tgram(self, x_wav):
         return self.tgramnet(x_wav)
@@ -183,7 +198,9 @@ class STgramMFN(nn.Module):
 
 
 class ArcMarginProduct(nn.Module):
-    def __init__(self, in_features=128, out_features=200, s=32.0, m=0.50, easy_margin=False):
+    def __init__(
+        self, in_features=128, out_features=200, s=32.0, m=0.50, easy_margin=False
+    ):
         super(ArcMarginProduct, self).__init__()
         self.in_features = in_features
         self.out_features = out_features

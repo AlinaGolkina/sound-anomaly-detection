@@ -74,7 +74,7 @@ class MimiiDue(Dataset):
         mode: str = "development",
         extraction_type: str = "amplitude",
         n_mfcc: int = 40,
-        n_mel: int = 128
+        n_mel: int = 128,
     ):
         self.target_dir = target_dir
         self.section_name = section_name
@@ -206,14 +206,17 @@ class MimiiDue(Dataset):
         elif extraction_type == "mfccs":
             features = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=n_mfcc)
             features = features.reshape(-1, features.shape[0], features.shape[1])
-            
+
         elif extraction_type == "melspectrogram":
-            features = librosa.feature.melspectrogram(y=y,sr=sr,
-                                                 n_fft=1024,
-                                                 n_mels=n_mel,
-                                                 win_length=1024,
-                                                 hop_length=512,
-                                                 power=2.0)
+            features = librosa.feature.melspectrogram(
+                y=y,
+                sr=sr,
+                n_fft=1024,
+                n_mels=n_mel,
+                win_length=1024,
+                hop_length=512,
+                power=2.0,
+            )
             features = features.reshape(-1, features.shape[0], features.shape[1])
         return features
 
@@ -241,7 +244,7 @@ class MimiiDue(Dataset):
                         float,
                     )
                 self.data[n_objs * idx : n_objs * (idx + 1), :] = vectors
-                
+
         elif self.extraction_type == "mfccs":
 
             for idx in tqdm(range(len(self.file_list))):
@@ -329,16 +332,16 @@ class ToyAdmos(Dataset):
         dir_name_anomaly: str,
         extraction_type: str = "amplitude",
         n_mfcc: int = 40,
-        n_mel: int = 128
+        n_mel: int = 128,
     ):
-        
+
         self.target_dir = target_dir
         self.dir_name_normal = dir_name_normal
         self.dir_name_anomaly = dir_name_anomaly
         self.extraction_type = extraction_type
         self.n_mfcc = n_mfcc
         self.n_mel = n_mel
-        
+
         self.samples = []
         self.labels = []
         self.file_list = []
@@ -448,16 +451,19 @@ class ToyAdmos(Dataset):
         elif extraction_type == "mfccs":
             features = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=n_mfcc)
             features = features.reshape(-1, features.shape[0], features.shape[1])
-            
+
         elif extraction_type == "melspectrogram":
-            features = librosa.feature.melspectrogram(y=y,sr=sr,
-                                                 n_fft=1024,
-                                                 n_mels=n_mel,
-                                                 win_length=1024,
-                                                 hop_length=512,
-                                                 power=2.0)
+            features = librosa.feature.melspectrogram(
+                y=y,
+                sr=sr,
+                n_fft=1024,
+                n_mels=n_mel,
+                win_length=1024,
+                hop_length=512,
+                power=2.0,
+            )
             features = features.reshape(-1, features.shape[0], features.shape[1])
-            
+
         return features
 
     ########################################################################
@@ -487,7 +493,7 @@ class ToyAdmos(Dataset):
                 self.data[
                     vectors.shape[0] * idx : vectors.shape[0] * (idx + 1), :
                 ] = vectors
-                
+
         elif self.extraction_type == "mfccs":
 
             for idx in tqdm(range(len(self.file_list))):
