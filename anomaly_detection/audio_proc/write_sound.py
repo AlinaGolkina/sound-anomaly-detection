@@ -1,8 +1,5 @@
 from datetime import datetime
-
 from recorder import Recorder
-
-
 def record_sound(channels=1, rate=16000, frames_per_buffer=1024, input_device_index=0):
     """
     parameters:
@@ -33,4 +30,5 @@ def record_sound(channels=1, rate=16000, frames_per_buffer=1024, input_device_in
 
 if __name__ == "__main__":
     dir_name = r"sound_rec/record_buffer"
+    # record from 1 mic
     record_sound(channels=1, rate=16000, frames_per_buffer=1024, input_device_index=0)
