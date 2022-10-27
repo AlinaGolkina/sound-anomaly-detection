@@ -1,107 +1,36 @@
-# -*- coding: utf-8 -*-
-'''Provides WAV recording functionality via two approaches:
-Blocking mode (record for a set duration):
->>> rec = Recorder(channels=2)
->>> with rec.open('blocking.wav', 'wb') as recfile:
-...     recfile.record(duration=5.0)
-Non-blocking mode (start and stop recording):
->>> rec = Recorder(channels=2)
->>> with rec.open('nonblocking.wav', 'wb') as recfile2:
-...     recfile2.start_recording()
-...     time.sleep(5.0)
-...     recfile2.stop_recording()
-'''
-import pyaudio
-import wave
 from datetime import datetime
 
-class Recorder(object):
-    '''A recorder class for recording audio to a WAV file.
-    Records in mono by default.
-    '''
+from recorder import Recorder
 
-    def __init__(self, channels=1, rate=16000, frames_per_buffer=1024, input_device_index=None):
-        self.channels = channels
-        self.rate = rate
-        self.frames_per_buffer = frames_per_buffer
-        self.input_device_index = input_device_index
 
-    def open(self, fname, mode='wb'):
-        return RecordingFile(fname, mode, self.channels, self.rate,
-                            self.frames_per_buffer, self.input_device_index)
+def record_sound(channels=1, rate=16000, frames_per_buffer=1024, input_device_index=0):
+    """
+    parameters:
+    ----------
+        rate – Sampling rate (16000 by default)
+        channels – Number of channels (1 by default, mono)
+        frames_per_buffer – Specifies the number of frames per buffer
+        input_device_index – Index of Input Device to use.
+                             Unspecified (or None) uses default device.
+                             Ignored if input is False.
 
-class RecordingFile(object):
-    def __init__(self, fname, mode, channels, 
-                rate, frames_per_buffer, input_device_index):
-        self.fname = fname
-        self.mode = mode
-        self.channels = channels
-        self.rate = rate
-        self.frames_per_buffer = frames_per_buffer
-        self.input_device_index = input_device_index
-        self._pa = pyaudio.PyAudio()
-        self.wavefile = self._prepare_file(self.fname, self.mode)
-        self._stream = None
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exception, value, traceback):
-        self.close()
-
-    def record(self, duration):
-        # Use a stream with no callback function in blocking mode
-        self._stream = self._pa.open(format=pyaudio.paInt16,
-                                        channels=self.channels,
-                                        rate=self.rate,
-                                        input=True,
-                                        input_device_index=self.input_device_index,
-                                        frames_per_buffer=self.frames_per_buffer)
-        for _ in range(int(self.rate / self.frames_per_buffer * duration)):
-            audio = self._stream.read(self.frames_per_buffer)
-            self.wavefile.writeframes(audio)
-        return None
-
-    def start_recording(self):
-        # Use a stream with a callback in non-blocking mode
-        self._stream = self._pa.open(format=pyaudio.paInt16,
-                                        channels=self.channels,
-                                        rate=self.rate,
-                                        input=True,
-                                        input_device_index=self.input_device_index,
-                                        frames_per_buffer=self.frames_per_buffer,
-                                        stream_callback=self.get_callback())
-        self._stream.start_stream()
-        return self
-
-    def stop_recording(self):
-        self._stream.stop_stream()
-        return self
-
-    def get_callback(self):
-        def callback(in_data, frame_count, time_info, status):
-            self.wavefile.writeframes(in_data)
-            return in_data, pyaudio.paContinue
-        return callback
-
-    def close(self):
-        self._stream.close()
-        self._pa.terminate()
-        self.wavefile.close()
-
-    def _prepare_file(self, fname, mode='wb'):
-        wavefile = wave.open(fname, mode)
-        wavefile.setnchannels(self.channels)
-        wavefile.setsampwidth(self._pa.get_sample_size(pyaudio.paInt16))
-        wavefile.setframerate(self.rate)
-        return wavefile
+    return:
+    -------
+        10 sec audio samples in dir_name
+    """
+    rec = Recorder(
+        channels=channels,
+        rate=rate,
+        frames_per_buffer=frames_per_buffer,
+        input_device_index=input_device_index,
+    )
+    while True:
+        file_name = datetime.now().strftime("%Y%m%d-%H%M%S")
+        with rec.open(f"{dir_name}/blocking_{file_name}.wav", "wb") as recfile:
+            recfile.record(duration=11.0)
+        print(f"recording...")
 
 
 if __name__ == "__main__":
-    dir_name = r'sound_rec/record_buffer'
-    rec = Recorder(channels=1, rate=16000, frames_per_buffer=1024, input_device_index=0)
-    while True:
-        
-        file_name = datetime.now().strftime("%Y%m%d-%H%M%S")
-        with rec.open(f'{dir_name}/blocking_{file_name}.wav', 'wb') as recfile:
-            recfile.record(duration=11.0)
+    dir_name = r"sound_rec/record_buffer"
+    record_sound(channels=1, rate=16000, frames_per_buffer=1024, input_device_index=0)

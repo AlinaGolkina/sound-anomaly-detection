@@ -35,7 +35,7 @@ class Mic(Dataset):
                 * normal/anomaly = 0/1
         file_list : list of file_names
     dataset: from microphone
-    
+
     """
 
     def __init__(
@@ -47,7 +47,7 @@ class Mic(Dataset):
         n_mfcc: int = 40,
         n_mel: int = 128,
         fformat: str = "wav",
-        batch: int = None
+        batch: int = None,
     ):
 
         self.target_dir = target_dir
@@ -70,26 +70,26 @@ class Mic(Dataset):
         return len(self.file_list)
 
     def __getitem__(self, idx) -> tuple:
-        return self.file_list[idx],self.data[idx], self.labels[idx]
+        return self.file_list[idx], self.data[idx], self.labels[idx]
 
     def __init_file_list_generator(self):
         query_norm = os.path.abspath(
             f"{self.target_dir}/{self.dir_name_normal}/*.{self.fformat}"
-            )
-        normal_files = sorted(glob.glob(query_norm))[:self.batch]
-        normal_labels = np.zeros(len(normal_files))[:self.batch]
+        )
+        normal_files = sorted(glob.glob(query_norm))[: self.batch]
+        normal_labels = np.zeros(len(normal_files))[: self.batch]
 
         query_anomaly = os.path.abspath(
             f"{self.target_dir}/{self.dir_name_anomaly}/*.{self.fformat}"
-            )
+        )
         anomaly_files = sorted(glob.glob(query_anomaly))
         anomaly_labels = np.ones(len(anomaly_files))
 
         self.file_list = np.concatenate((normal_files, anomaly_files), axis=0)
         self.labels = np.concatenate((normal_labels, anomaly_labels), axis=0)
-        
+
         if self.batch is not None:
-            return self.file_list[:self.batch], self.labels[:self.batch]
+            return self.file_list[: self.batch], self.labels[: self.batch]
         else:
             return self.file_list, self.labels
 
