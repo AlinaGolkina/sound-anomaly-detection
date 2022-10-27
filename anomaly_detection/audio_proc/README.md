@@ -4,6 +4,7 @@
 2. train the iforest model (**iforest_train.py**) on train dataset (**audio_proc/sound_rec/train_unlabled/**) and saving model to **train_iforest.onnx** 
 3. sounds recording from 2 mics (**write_sound_2_mics.py**) and anomaly prediction of batches of audio samples from recorded sounds buffer (per 1 minute/hour to predictions.csv) and moving predicted audio samples to **audio_proc/sound_rec/predicted_records/**
 
+## Files descriptions
 
 
 Files                      | Description                                                   
