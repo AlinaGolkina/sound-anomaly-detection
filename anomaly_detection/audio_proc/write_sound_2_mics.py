@@ -22,10 +22,7 @@ def record_sound(channels=1, rate=16000, frames_per_buffer=1024, input_device_in
     -------
         10 sec audio samples in dir_name
     """
-    if input_device_index == 0:
-        dev = 1
-    else:
-        dev = 2
+
     rec = Recorder(
         channels=channels,
         rate=rate,
@@ -34,9 +31,11 @@ def record_sound(channels=1, rate=16000, frames_per_buffer=1024, input_device_in
     )
     while True:
         file_name = datetime.now().strftime("%Y%m%d-%H%M%S")
-        with rec.open(f"{dir_name}/blocking_{dev}mic_{file_name}.wav", "wb") as recfile:
+        with rec.open(
+            f"{dir_name}/blocking_{input_device_index}mic_{file_name}.wav", "wb"
+        ) as recfile:
             recfile.record(duration=11.0)
-        print(f"recording {dev} mic...")
+        print(f"recording {input_device_index} mic...")
 
 
 def preds():
@@ -61,7 +60,7 @@ def thr():
 
 
 if __name__ == "__main__":
-    dir_name = r"sound_rec/record_buffer_2_mics"
+    dir_name = r"sound_rec/record_buffer"
     schedule.every(1).minutes.do(preds)
     Thread(target=thr).start()
     # recording first mic (device [0])
