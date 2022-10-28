@@ -3,7 +3,7 @@ from datetime import datetime
 from recorder import Recorder
 
 
-def record_sound(channels=1, rate=16000, frames_per_buffer=1024, input_device_index=0):
+def record_sound(channels=1, rate=16000, frames_per_buffer=1024):
     """
     parameters:
     ----------
@@ -22,7 +22,6 @@ def record_sound(channels=1, rate=16000, frames_per_buffer=1024, input_device_in
         channels=channels,
         rate=rate,
         frames_per_buffer=frames_per_buffer,
-        input_device_index=input_device_index,
     )
     while True:
         file_name = datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -32,6 +31,6 @@ def record_sound(channels=1, rate=16000, frames_per_buffer=1024, input_device_in
 
 
 if __name__ == "__main__":
-    dir_name = r"sound_rec/record_buffer"
+    dir_name = r"sound_rec/train_unlabled"
     # record from 1 mic
-    record_sound(channels=1, rate=16000, frames_per_buffer=1024, input_device_index=0)
+    record_sound(channels=1, rate=16000, frames_per_buffer=1024)
