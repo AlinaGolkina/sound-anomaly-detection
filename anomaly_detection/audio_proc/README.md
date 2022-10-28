@@ -1,12 +1,11 @@
 # Stream Sound recording and Anomaly detection
 
-1. recording of training dataset to **audio_proc/sound_rec/train_unlabled/**  
+1. Record the training dataset to **audio_proc/sound_rec/train_unlabled/**  
      - **write_sound.py** - from one mic and without anomaly prediction thread, 
-     - **write_sound_2_mics.py** - recording from 2 devices from threads and anomaly predictions per 1 min/hour)
+     
+2. Train the iforest model (**iforest_train.py**) on train dataset (**audio_proc/sound_rec/train_unlabled/**) and saving model to **train_iforest.onnx** 
 
-2. train the iforest model (**iforest_train.py**) on train dataset (**audio_proc/sound_rec/train_unlabled/**) and saving model to **train_iforest.onnx** 
-
-3. sounds recording from 2 mics (**write_sound_2_mics.py**) and anomaly prediction of batches of audio samples from recorded sounds buffer (per 1 minute/hour to **predictions.csv**) and moving predicted audio samples to **audio_proc/sound_rec/predicted_records/**
+3. Stream recording audio samples from 2 mics (**write_sound_2_mics.py**) to **audio_proc\sound_rec\record_buffer** and anomaly prediction of batches of audio samples from recorded sounds buffer (per 1 minute/hour to **predictions.csv**) and moving predicted audio samples to **audio_proc/sound_rec/predicted_records/**
 
 ## Files descriptions
 
