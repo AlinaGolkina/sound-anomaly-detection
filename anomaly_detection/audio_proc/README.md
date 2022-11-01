@@ -7,6 +7,18 @@
 
 3. Stream recording audio samples from 2 mics (**write_sound_2_mics.py**) to **audio_proc\sound_rec\record_buffer** and anomaly prediction of batches of audio samples from recorded sounds buffer (per 1 minute/hour to **predictions.csv**) and moving predicted audio samples to **audio_proc/sound_rec/predicted_records/**
 
+4. requirements in **requirements.txt**:
+- librosa==0.9.2
+- numpy==1.23.2
+- onnxruntime==1.12.1
+- PyAudio==0.2.12
+- schedule==1.1.0
+- scikit_learn==1.1.3
+- scipy==1.8.1
+- skl2onnx==1.13
+- torch==1.12.1
+- tqdm==4.64.0
+
 ## Files descriptions
 
 
@@ -21,3 +33,4 @@ Files                      | Description
 **train_iforest.onnx**    |trained iForest model
 **write_sound.py**        |sound recording from default input device (if certain device, set parameter input_device_index, you can get indexes of devices from **device.py**)
 **write_sound_2_mics.py** |sound recording from two microphones using threading, and anomaly predictions for batch recorded audio samples per 1 hour
+**requirements.txt**      |dependencies
