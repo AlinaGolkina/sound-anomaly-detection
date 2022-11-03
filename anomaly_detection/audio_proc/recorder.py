@@ -1,4 +1,5 @@
 """
+    Code borrowed from:
     https://people.csail.mit.edu/hubert/pyaudio/docs/
     https://gist.github.com/sloria/5693955
     Provides WAV recording functionality via two approaches:
@@ -14,6 +15,7 @@
             recfile2.stop_recording()
 """
 import wave
+from datetime import datetime
 
 import pyaudio
 
@@ -29,20 +31,21 @@ class Recorder(object):
         self.channels = channels
         self.rate = rate
         self.frames_per_buffer = frames_per_buffer
-        self.input_device = input_device_index
+        self.input_device_index = input_device_index
 
     def open(self, fname, mode="wb"):
+        """Some useful info"""
         return RecordingFile(
             fname,
             mode,
             self.channels,
             self.rate,
             self.frames_per_buffer,
-            self.input_device,
+            self.input_device_index,
         )
 
 
-class RecordingFile(object):
+class RecordingFile:
     def __init__(
         self, fname, mode, channels, rate, frames_per_buffer, input_device_index
     ):
@@ -51,34 +54,36 @@ class RecordingFile(object):
         self.channels = channels
         self.rate = rate
         self.frames_per_buffer = frames_per_buffer
-        self.input_device = input_device_index
-        self._pa = pyaudio.PyAudio()
-        self.wavefile = self._prepare_file(self.fname, self.mode)
-        self._stream = None
+        self.input_device_index = input_device_index
 
     def __enter__(self):
+        self._pa = pyaudio.PyAudio()
+        self.wavefile = self._prepare_file(self.fname, self.mode)
         return self
 
     def __exit__(self, exception, value, traceback):
         self.close()
 
-    def record(self, duration):
-        # Use a stream with no callback function in blocking mode
+    def record(self, duration: float):
+        """Use a stream with no callback function in blocking mode
+
+        Args:
+            duration: seconds
+        """
         self._stream = self._pa.open(
-            format=pyaudio.paInt16,
-            channels=self.channels,
-            rate=self.rate,
-            input=True,
-            input_device_index=self.input_device,
+            self.rate,
+            self.channels,
+            pyaudio.paInt16,
+            True,
+            input_device_index=self.input_device_index,
             frames_per_buffer=self.frames_per_buffer,
         )
         for _ in range(int(self.rate / self.frames_per_buffer * duration)):
             audio = self._stream.read(self.frames_per_buffer)
             self.wavefile.writeframes(audio)
-        return None
 
     def start_recording(self):
-        # Use a stream with a callback in non-blocking mode
+        """Use a stream with a callback in non-blocking mode"""
         self._stream = self._pa.open(
             format=pyaudio.paInt16,
             channels=self.channels,
@@ -112,3 +117,29 @@ class RecordingFile(object):
         wavefile.setsampwidth(self._pa.get_sample_size(pyaudio.paInt16))
         wavefile.setframerate(self.rate)
         return wavefile
+
+
+def record_sound(
+    dir_name, channels=1, rate=16000, frames_per_buffer=1024, input_device_index=None
+):
+    """
+    parameters:
+    ----------
+        rate – Sampling rate (16000 by default)
+        channels – Number of channels (1 by default, mono)
+        frames_per_buffer – Specifies the number of frames per buffer
+        input_device_index – Index of Input Device to use.
+                             Unspecified (or None) uses default device.
+                             Ignored if input is False.
+
+    return:
+    -------
+        10 sec audio samples in dir_name
+    """
+    rec = Recorder(channels, rate, frames_per_buffer, input_device_index)
+    while True:
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        fname = f"{dir_name}/blocking_{input_device_index}mic_{timestamp}.wav"
+        with rec.open(fname, "wb") as recfile:
+            recfile.record(duration=11.0)
+        print(f"recording {input_device_index} mic...")

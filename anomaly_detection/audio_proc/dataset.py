@@ -34,8 +34,7 @@ class Mic(Dataset):
                  label info. list
                 * normal/anomaly = 0/1
         file_list : list of file_names
-    dataset: from microphone
-
+        dataset: from microphone
     """
 
     def __init__(
