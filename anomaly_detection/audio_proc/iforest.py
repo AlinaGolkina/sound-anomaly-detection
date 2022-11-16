@@ -1,13 +1,15 @@
-import os
+import pathlib
 import shutil
 
 import numpy as np
 import onnxruntime as rt
+import pandas as pd
+
+# from .dataset import Mic
+from dataset import Mic
 from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import FloatTensorType
 from sklearn.ensemble import IsolationForest
-
-from .dataset import Mic
 
 
 def iforest_to_onnx(target_dir=r"sound_rec", dir_name_data=r"/train_unlabled"):
@@ -41,13 +43,32 @@ def iforest_to_onnx(target_dir=r"sound_rec", dir_name_data=r"/train_unlabled"):
         f.write(onx.SerializeToString())
 
 
-def iforest_preds(target_dir, dir_name_data, predicted_dir, onnx_file, batch):
+def iforest_preds(
+    target_dir="sound_rec",
+    dir_name_data="/record_buffer",
+    predicted_dir="predicted_records",
+    onnx_file="train_iforest.onnx",
+    batch=5,
+):
     """
     Get predictions for recordered sounds and move files to predicted_dir
+
+    parameters:
+    ------------
+    target_dir - dir with all records ("sound_rec" by default)
+    dir_name_data - dir with sounds for prediction ("/record_buffer" by default)
+    predicted_dir - dir with anomaly predicted sounds ("predicted_records" by default)
+    onnx_file - trained iforest model ("train_iforest.onnx" by default)
+    batch - dataset size for prediction every minute/hour, etc (5 by default)
+
+    return:
+    -------
+
+    prediction results in file "predictions.csv"
     """
     test = Mic(target_dir, dir_name_data, extraction_type="aggregate_MFCC", batch=batch)
 
-    sess = rt.InferenceSession("train_iforest.onnx")
+    sess = rt.InferenceSession(onnx_file)
     input_name = sess.get_inputs()[0].name
     label_name = sess.get_outputs()[0].name
     pred_onx = sess.run([label_name], {input_name: test.data.astype(np.float32)})[0]
@@ -55,22 +76,10 @@ def iforest_preds(target_dir, dir_name_data, predicted_dir, onnx_file, batch):
     pred_onx = np.where(pred_onx == -1, "anomaly", "normal")
     file_source = f"{target_dir}/{dir_name_data}"
     file_target = f"{target_dir}/{predicted_dir}"
-    for fname, pred in zip(file_list, pred_onx):
-        with open("predictions.csv", "a") as file:
-            file.write(",".join([str(fname), str(pred)]))
-            file.write("\n")
+
+    pd.DataFrame([file_list, pred_onx]).to("predictions.csv", mode="a", index=False)
 
     for file_name in file_list:
-        shutil.move(os.path.join(file_source, file_name), file_target)
+        shutil.move(pathlib.Path(file_source, file_name), file_target)
 
     return pred_onx
-
-
-if __name__ == "__main__":
-    iforest_preds(
-        target_dir=r"sound_rec",
-        dir_name_data=r"/record_buffer",
-        predicted_dir=r"predicted_records",
-        onnx_file="train_iforest.onnx",
-        batch=5,
-    )
