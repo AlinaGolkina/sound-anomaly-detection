@@ -6,13 +6,13 @@ import onnxruntime as rt
 import pandas as pd
 
 # from .dataset import Mic
-from dataset import Mic
+from dataset import Soundsdataset
 from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import FloatTensorType
 from sklearn.ensemble import IsolationForest
 
 
-def iforest_to_onnx(target_dir=r"sound_rec", dir_name_data=r"/train_unlabled"):
+def iforest_to_onnx(target_dir, dir_name_data):
     """
     Anomaly detection training with Isolation Forest
     and saving trained model to onnx
@@ -28,7 +28,7 @@ def iforest_to_onnx(target_dir=r"sound_rec", dir_name_data=r"/train_unlabled"):
 
     """
     # data dir
-    dataset_train = Mic(
+    dataset_train = Soundsdataset(
         target_dir,
         dir_name_data,
         extraction_type="aggregate_MFCC",
@@ -44,11 +44,11 @@ def iforest_to_onnx(target_dir=r"sound_rec", dir_name_data=r"/train_unlabled"):
 
 
 def iforest_preds(
-    target_dir="sound_rec",
-    dir_name_data="/record_buffer",
-    predicted_dir="predicted_records",
-    onnx_file="train_iforest.onnx",
-    batch=5,
+    target_dir,
+    dir_name_data,
+    predicted_dir,
+    onnx_file,
+    batch,
 ):
     """
     Get predictions for recordered sounds and move files to predicted_dir
@@ -66,7 +66,7 @@ def iforest_preds(
 
     prediction results in file "predictions.csv"
     """
-    test = Mic(target_dir, dir_name_data, extraction_type="aggregate_MFCC", batch=batch)
+    test = Soundsdataset(target_dir, dir_name_data, extraction_type="aggregate_MFCC", batch=batch)
 
     sess = rt.InferenceSession(onnx_file)
     input_name = sess.get_inputs()[0].name
@@ -77,7 +77,7 @@ def iforest_preds(
     file_source = f"{target_dir}/{dir_name_data}"
     file_target = f"{target_dir}/{predicted_dir}"
 
-    pd.DataFrame([file_list, pred_onx]).to("predictions.csv", mode="a", index=False)
+    pd.DataFrame([file_list, pred_onx]).to_csv("predictions.csv", mode="a", index=False)
 
     for file_name in file_list:
         shutil.move(pathlib.Path(file_source, file_name), file_target)

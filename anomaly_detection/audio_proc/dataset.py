@@ -8,7 +8,7 @@ from torch.utils.data import Dataset
 from tqdm import tqdm
 
 
-class Mic(Dataset):
+class Soundsdataset(Dataset):
     """Parameters:
     -----------
     target_dir : str
@@ -191,7 +191,7 @@ class Mic(Dataset):
 
             for idx in tqdm(range(len(self.file_list))):
 
-                vectors = Mic._feature_extraction_from_file(
+                vectors = Soundsdataset._feature_extraction_from_file(
                     self.file_list[idx], self.extraction_type, self.n_mfcc, self.n_mel
                 )
                 vectors = vectors[::1, :]
@@ -213,7 +213,7 @@ class Mic(Dataset):
 
             for idx in tqdm(range(len(self.file_list))):
 
-                vectors = Mic._feature_extraction_from_file(
+                vectors = Soundsdataset._feature_extraction_from_file(
                     self.file_list[idx], self.extraction_type, self.n_mfcc, self.n_mel
                 )
                 vectors = vectors[::1, :]
@@ -232,7 +232,7 @@ class Mic(Dataset):
 
         else:
             for idx in tqdm(range(len(self.file_list))):
-                vectors = Mic._feature_extraction_from_file(
+                vectors = Soundsdataset._feature_extraction_from_file(
                     self.file_list[idx], self.extraction_type, self.n_mfcc, self.n_mel
                 )
                 n_objs = vectors.shape[0]
