@@ -26,7 +26,7 @@ class Recorder(object):
     """
 
     def __init__(
-        self, channels=1, rate=16000, frames_per_buffer=1024, input_device_index=None
+        self, channels, rate, frames_per_buffer, input_device_index
     ):
         self.channels = channels
         self.rate = rate
@@ -120,7 +120,7 @@ class RecordingFile:
 
 
 def record_sound(
-    dir_name, channels=1, rate=16000, frames_per_buffer=1024, input_device_index=None
+    dir_name, channels, rate, frames_per_buffer, duration, input_device_index
 ):
     """
     parameters:
@@ -141,5 +141,5 @@ def record_sound(
         timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
         fname = f"{dir_name}/blocking_{input_device_index}mic_{timestamp}.wav"
         with rec.open(fname, "wb") as recfile:
-            recfile.record(duration=11.0)
+            recfile.record(duration)
         print(f"recording {input_device_index} mic...")
