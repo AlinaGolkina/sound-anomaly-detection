@@ -1,32 +1,31 @@
 # Stream Sound recording and Anomaly detection
+1. Dirs structure:
+   **\sound_rec**
+      **\flac** - converted audio records from wavs to flac
+      **\predicted_records** 
+      **\record_buffer**
+      **\train_unlabled**
 
-1. Record the training dataset to **audio_proc/sound_rec/train_unlabled/**
+2. Record the training dataset to **audio_proc/sound_rec/train_unlabled/**
 
-   - **write_sound.py** - from one mic and without anomaly prediction thread,
+   - **commands.py  record_single** - from one mic and without anomaly prediction thread,
 
-2. Train the iforest model (**iforest_train.py**) on train dataset
-   (**audio_proc/sound_rec/train_unlabled/**) and saving model to
-   **train_iforest.onnx**
+3. Train the iforest model on train dataset (**audio_proc/sound_rec/train_unlabled/**) and saving model to  **train_iforest.onnx**
+  - **commands.py  train_iforest**
+4. Stream recording audio samples from 2 mics (*commands.py  record_two**) to
+   **audio_proc\sound_rec\record_buffer** and converting to .flac format (per 1 minute/hour to
+   **\flac**) 
 
-3. Stream recording audio samples from 2 mics (**write_sound_2_mics.py**) to
-   **audio_proc\sound_rec\record_buffer** and anomaly prediction of batches of
-   audio samples from recorded sounds buffer (per 1 minute/hour to
-   **predictions.csv**) and moving predicted audio samples to
-   **audio_proc/sound_rec/predicted_records/**
-
-4. requirements in **requirements.txt**
+5. requirements in **requirements.txt**
 
 ## Files descriptions
 
 | Files                     | Description                                                                                                                                                                                                     |
 | :------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **dataset.py**            | dataset creation class for anomaly detecting (for training and test dataset creation)                                                                                                                           |
-| **device.py**             | print available devices and device index for pyAudio sound record                                                                                                                                               |
-| **forest_test.py**        | Get predictions for batch of recordered sounds and move files to predicted_dir using pretrained model from train_iforest.onnx                                                                                   |
-| **iforest_train.py**      | Anomaly detection training with Isolation Forest and saving trained model to onnx file                                                                                                                          |
-| **predictions.csv**       | csv file with predicted sound batches in format: sound_name_file, anomaly/normal                                                                                                                                |
-| **recorder.py**           | PyAudio recorder class, provides WAV recording functionality, PyAudio documentation: [https://people.csail.mit.edu/hubert/pyaudio/docs/] Recorder class realization by [https://gist.github.com/sloria/5693955] |
-| **train_iforest.onnx**    | trained iForest model                                                                                                                                                                                           |
-| **write_sound.py**        | sound recording from default input device (if certain device, set parameter input_device_index, you can get indexes of devices from **device.py**)                                                              |
-| **write_sound_2_mics.py** | sound recording from two microphones using threading, and anomaly predictions for batch recorded audio samples per 1 hour                                                                                       |
-| **requirements.txt**      | dependencies                                                                                                                                                                                                    |
+| **dataset.py**            | dataset creation class for anomaly detecting (for training and test dataset creation)                                                                                                                                                                                                 |
+| **iforest.py**            | training iforest model and predictions   |     
+| **predictions.csv**       | csv file with predicted sound batches in format: sound_name_file, anomaly/normal                                              |
+| **recorder.py**           | PyAudio recorder class, provides WAV recording functionality, PyAudio documentation: [https://people.csail.mit.edu/hubert/pyaudio/docs/] | Recorder class realization by [https://gist.github.com/sloria/5693955] |
+| **train_iforest.onnx**    | trained iForest model          |                                                                                                         
+| **commands.py**           | commands for sound recording (1 mic and 2 mics), iforest model training and getting device index)  |                                     
+| **requirements.txt**      | dependencies                                                                                                                           |
