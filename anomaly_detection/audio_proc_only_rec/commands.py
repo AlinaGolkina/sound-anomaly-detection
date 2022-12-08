@@ -55,7 +55,7 @@ def record_two(
                 pathlib.Path(dir_with_wav, sound).unlink()
 
     # to_flack
-    schedule.every(1).minutes.do(to_flack, dir_with_wav, target_dir)
+    schedule.every(1).hours.do(to_flack, dir_with_wav, target_dir)
     Thread(target=thr).start()
     # recording first mic (device [0])
     Thread(
