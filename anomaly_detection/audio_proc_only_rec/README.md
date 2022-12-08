@@ -26,7 +26,7 @@
 | Files                     | Description                                                                                                                                                                                                     |
 | :------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **recorder.py**           | PyAudio recorder class, provides WAV recording functionality, PyAudio documentation: [https://people.csail.mit.edu/hubert/pyaudio/docs/] | Recorder class realization by [https://gist.github.com/sloria/5693955] |                                                                                        
-| **commands.py**           | commands for sound recording (1 mic and 2 mics), iforest model training and getting device index)  |                                     
+| **commands.py**           | commands for sound recording (1 mic and 2 mics), convert to flack and getting device index)  |                                     
 | **requirements.txt**      | dependencies                                                                                                                           |
 
 
