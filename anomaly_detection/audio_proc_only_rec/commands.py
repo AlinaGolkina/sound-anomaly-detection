@@ -2,8 +2,9 @@ import pathlib
 import shutil
 import subprocess
 import time
+from datetime import datetime
 from threading import Thread
-import pandas as pd
+import sys
 
 import fire
 import pyaudio
@@ -13,27 +14,52 @@ from recorder import record_sound
 
 
 def record_single(
-    dir_name="sound_rec/train_unlabled",
+    dir_with_wav="/home/evocargo/audio_proc/sound_rec/record_buffer",
+    target_dir="/home/evocargo/audio_proc/sound_rec/flac",
     channels=1,
-    rate=16000,
-    frames_per_buffer=1024,
-    duration=11,
+    rate=44100,
+    frames_per_buffer=512,
+    duration=60, # 11, 
     input_device_index=None,
 ):
-    record_sound(
-        dir_name, channels, rate, frames_per_buffer, duration, input_device_index
-    )
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    p = pyaudio.PyAudio()
+    info = p.get_host_api_info_by_index(0)
+    numdevices = info.get('deviceCount')
+    index = None
+    
+    # finding device index of USB microphone
+    for i in range(0, numdevices):
+        if 'USB PnP' in p.get_device_info_by_host_api_device_index(0, i).get('name'):
+            index = i
+    if index:
+        try:
+    
+            record_sound(dir_with_wav,
+                         channels,
+                         rate,
+                         frames_per_buffer,
+                         duration,
+                         input_device_index=index)
 
-
+        except Exception as e:
+            print("Error:", e, file=sys.stderr)
+            with open("/home/evocargo/audio_proc/recording_errors.txt", "a") as f:
+                f.write(f"{timestamp}: Error: {e}\n")
+    else:
+        with open("/home/evocargo/audio_proc/recording_errors.txt", "a") as f:
+            f.write(f"{timestamp}: couldn't find the right microphone\n")
+	    
+	    
 def record_two(
-    dir_with_wav="sound_rec/record_buffer",
-    target_dir="sound_rec/flac",
+    dir_with_wav="/home/evocargo/audio_proc/sound_rec/record_buffer",
+    target_dir="/home/evocargo/audio_proc/sound_rec/flac",
     channels=1,
-    rate=16000,
-    frames_per_buffer=1024,
+    rate=44100,
+    frames_per_buffer=512,
     duration=11,
-    input_device_index_1=0,
-    input_device_index_2=1,
+    input_device_index_1=None,
+    input_device_index_2=None,
 ):
     def thr():
         while True:
@@ -49,14 +75,11 @@ def record_two(
             if pathlib.Path(target_dir, new_name_short).exists():
                 continue
             else:
-                comm = f"FFmpeg -i {sound} {new_name}"
-                subprocess.call(comm)
+                comm = f"ffmpeg -i {sound} {new_name}"
+                subprocess.call(comm, shell = True)
                 shutil.move(pathlib.Path(dir_with_wav, new_name_short), target_dir)
                 pathlib.Path(dir_with_wav, sound).unlink()
 
-    # to_flack
-    schedule.every(1).hours.do(to_flack, dir_with_wav, target_dir)
-    Thread(target=thr).start()
     # recording first mic (device [0])
     Thread(
         target=record_sound,
@@ -70,6 +93,7 @@ def record_two(
         ),
     ).start()
     time.sleep(1)
+
     # recording second mic (device [1])
     Thread(
         target=record_sound,
@@ -88,10 +112,13 @@ def devices():
     """
     print available devices and device index for pyAudio sound record
     """
+    with open("cron_output2.txt", "w") as f:
+	    f.write(f"PyAudio version: {pyaudio.__version__}\n")
     p = pyaudio.PyAudio()
     for i in range(p.get_device_count()):
         print(i, p.get_device_info_by_index(i)["name"])
 
 
 if __name__ == "__main__":
-    fire.Fire()
+
+	fire.Fire()

@@ -15,9 +15,15 @@
             recfile2.stop_recording()
 """
 import wave
+import pathlib
+import shutil
+import subprocess
+import re
 from datetime import datetime
 
 import pyaudio
+
+
 
 
 class Recorder(object):
@@ -77,7 +83,7 @@ class RecordingFile:
             frames_per_buffer=self.frames_per_buffer,
         )
         for _ in range(int(self.rate / self.frames_per_buffer * duration)):
-            audio = self._stream.read(self.frames_per_buffer)
+            audio = self._stream.read(self.frames_per_buffer, exception_on_overflow=False)
             self.wavefile.writeframes(audio)
 
     def start_recording(self):
@@ -135,9 +141,30 @@ def record_sound(
         10 sec audio samples in dir_name
     """
     rec = Recorder(channels, rate, frames_per_buffer, input_device_index)
+    target_dir="/home/evocargo/audio_proc/sound_rec/flac"
     while True:
         timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
         fname = f"{dir_name}/blocking_{input_device_index}mic_{timestamp}.wav"
         with rec.open(fname, "wb") as recfile:
             recfile.record(duration)
+            
+              
         print(f"recording {input_device_index} mic...")
+        sound = pathlib.Path(f"{fname}").absolute()
+        
+        cmd = f"ffmpeg -i  {sound} -af silencedetect=n=-40dB:d=50 -f null - "
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,universal_newlines=True, shell=True)
+        if re.search('silence_duration: ..', process.stdout.read()):
+            pathlib.Path(dir_name, sound).unlink()
+            continue
+        else:
+            new_name = sound.with_suffix(".flac")
+            new_name_short = new_name.name
+            if pathlib.Path(target_dir, new_name_short).exists():
+                continue
+            else:
+                comm = f"ffmpeg -i {sound} {new_name}"
+                subprocess.call(comm, shell=True)
+                shutil.move(pathlib.Path(dir_name, new_name_short), target_dir)
+                pathlib.Path(dir_name, sound).unlink()
+            

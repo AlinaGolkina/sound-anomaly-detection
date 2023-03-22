@@ -1,0 +1,7 @@
+20230205-003353: Error: 'RecordingFile' object has no attribute '_stream'
+20230205-020014: Error: 'RecordingFile' object has no attribute '_stream'
+20230208-021353: Error: 'RecordingFile' object has no attribute '_stream'
+20230208-024618: Error: 'RecordingFile' object has no attribute '_stream'
+20230208-080808: couldn't find the right microphone
+20230208-085617: Error: 'RecordingFile' object has no attribute '_stream'
+20230208-130023: couldn't find the right microphone
