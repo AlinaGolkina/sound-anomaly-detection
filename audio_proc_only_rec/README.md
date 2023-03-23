@@ -45,3 +45,12 @@ audioproc record_single --device /dev/snd:/dev/snd
 
 docker run -v $(pwd)/sound_rec/record_buffer:/sound_rec/record_buffer \
 -v $(pwd)/sound_rec/flac:/sound_rec/flac audioproc record_two --device /dev/snd:/dev/snd
+
+# crontab_tasks.txt
+
+```
+evocargo@evocargo-ubuntu-pi:~$ crontab -l
+@reboot sleep 60 && python3 ~/audio_proc/commands.py "record_single"
+
+*/15 * * * * python3 ~/audio_proc/connection_move_s3.py
+```
