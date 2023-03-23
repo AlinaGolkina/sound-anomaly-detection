@@ -14,16 +14,14 @@
             time.sleep(5.0)
             recfile2.stop_recording()
 """
-import wave
 import pathlib
+import re
 import shutil
 import subprocess
-import re
+import wave
 from datetime import datetime
 
 import pyaudio
-
-
 
 
 class Recorder(object):
@@ -141,20 +139,25 @@ def record_sound(
         10 sec audio samples in dir_name
     """
     rec = Recorder(channels, rate, frames_per_buffer, input_device_index)
-    target_dir="/home/evocargo/audio_proc/sound_rec/flac"
+    target_dir = "/home/evocargo/audio_proc/sound_rec/flac"
     while True:
         timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
         fname = f"{dir_name}/blocking_{input_device_index}mic_{timestamp}.wav"
         with rec.open(fname, "wb") as recfile:
             recfile.record(duration)
-            
-              
+
         print(f"recording {input_device_index} mic...")
         sound = pathlib.Path(f"{fname}").absolute()
-        
+
         cmd = f"ffmpeg -i  {sound} -af silencedetect=n=-40dB:d=50 -f null - "
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,universal_newlines=True, shell=True)
-        if re.search('silence_duration: ..', process.stdout.read()):
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            universal_newlines=True,
+            shell=True,
+        )
+        if re.search("silence_duration: ..", process.stdout.read()):
             pathlib.Path(dir_name, sound).unlink()
             continue
         else:
@@ -167,4 +170,3 @@ def record_sound(
                 subprocess.call(comm, shell=True)
                 shutil.move(pathlib.Path(dir_name, new_name_short), target_dir)
                 pathlib.Path(dir_name, sound).unlink()
-            

@@ -66,7 +66,9 @@ def iforest_preds(
 
     prediction results in file "predictions.csv"
     """
-    test = Soundsdataset(target_dir, dir_name_data, extraction_type="aggregate_MFCC", batch=batch)
+    test = Soundsdataset(
+        target_dir, dir_name_data, extraction_type="aggregate_MFCC", batch=batch
+    )
 
     sess = rt.InferenceSession(onnx_file)
     input_name = sess.get_inputs()[0].name
