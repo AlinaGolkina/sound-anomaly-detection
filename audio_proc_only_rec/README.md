@@ -54,3 +54,10 @@ evocargo@evocargo-ubuntu-pi:~$ crontab -l
 
 */15 * * * * python3 ~/audio_proc/connection_move_s3.py
 ```
+
+# recording_errors.txt
+
+```
+20230205-003353: Error: 'RecordingFile' object has no attribute '_stream'
+20230208-080808: couldn't find the right microphone
+```

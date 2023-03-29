@@ -1,3 +1,11 @@
+import librosa
+import numpy as np
+import scipy
+from torch.utils.data import Dataset
+from tqdm import tqdm
+from pathlib import Path
+
+
 class ToyAdmos(Dataset):
     """Parameters:
     -----------
@@ -8,9 +16,11 @@ class ToyAdmos(Dataset):
     dir_name_anomaly : str
         sub directory name with anomaly samples
     extraction_type : str
-        'amplitude' - [default] original signal, amplitude values timeseries
-        'aggregate_MFCC' - aggregate statistic from melspectrogram
+        'amplitude' - 1D [default] original signal, amplitude values timeseries
+        'aggregate_features' - 1D aggregate statistics from melspectrogram, time domain and frequency domain features
+        'spectrogram' - 2D spectrogram
         'melspectrogram' - 2D melspectrogramm
+        'mfccs' - 2D MFCC coefficients
     n_mfcc : int
         mel koeff q-ty
         40 - [default]
@@ -61,9 +71,7 @@ class ToyAdmos(Dataset):
         self.n_mel = n_mel
 
         self.samples = []
-        self.labels = []
-        self.file_list = []
-        self.__init_file_list_generator()
+        self.file_list, self.labels = self._init_file_list_generator()
         self.data = []
         self._file_list_to_data()
 
@@ -73,34 +81,32 @@ class ToyAdmos(Dataset):
     def __getitem__(self, idx) -> tuple:
         return self.data[idx], self.labels[idx]
 
-    def __init_file_list_generator(self):
-        query_norm = os.path.abspath(
-            "{target_dir}/{dir_name_normal}/*.mp4".format(
-                target_dir=self.target_dir, dir_name_normal=self.dir_name_normal
-            )
-        )
-        normal_files = sorted(glob.glob(query_norm))
+    def _init_file_list_generator(self):
+        query_norm = Path(
+            f"{self.target_dir}/{self.dir_name_normal}"
+        ).absolute()
+        normal_files = sorted(list(query_norm.glob('*.mp4')))
         normal_labels = np.zeros(len(normal_files))
 
-        query_anomaly = os.path.abspath(
-            "{target_dir}/{dir_name_anomaly}/*.mp4".format(
-                target_dir=self.target_dir, dir_name_anomaly=self.dir_name_anomaly
-            )
-        )
-        anomaly_files = sorted(glob.glob(query_anomaly))
+        query_anomaly = Path(
+            f"{self.target_dir}/{self.dir_name_anomaly}"
+        ).absolute()
+        anomaly_files = sorted(list(query_anomaly.glob('*.mp4')))
         anomaly_labels = np.ones(len(anomaly_files))
 
-        self.file_list = np.concatenate((normal_files, anomaly_files), axis=0)
-        self.labels = np.concatenate((normal_labels, anomaly_labels), axis=0)
+        file_list = np.concatenate((normal_files, anomaly_files), axis=0)
+        labels = np.concatenate((normal_labels, anomaly_labels), axis=0)
 
-        return self.file_list, self.labels
+        return file_list, labels
 
     @staticmethod
     def _feature_extraction_from_file(file, extraction_type, n_mfcc, n_mel):
-        """feature extractor"""
+        """
+        feature extractor
+        """
         y, sr = librosa.load(file, sr=16000, mono=True)
 
-        if extraction_type == "aggregate_MFCC":
+        if extraction_type == "aggregate_features":
 
             # Mel-frequency cepstral coefficients (MFCCs)
             mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=n_mfcc)
@@ -182,41 +188,23 @@ class ToyAdmos(Dataset):
             )
             features = features.reshape(-1, features.shape[0], features.shape[1])
 
+        elif extraction_type == 'spectrogram':
+            X = librosa.stft(y)
+            features = librosa.amplitude_to_db(abs(X), ref=np.max)
+            features = features.reshape(-1, features.shape[0], features.shape[1])
+
         return features
 
-    ########################################################################
-    # all dataset from file_list with features
-    ########################################################################
-
     def _file_list_to_data(self):
-        """iteration each file to vector array()"""
-        if self.extraction_type == "melspectrogram":
+        """
+        all dataset from file_list with features
+        iteration each file to vector array()
+        """
+        if self.extraction_type == "melspectrogram" or self.extraction_type == 'spectrogram' or self.extraction_type == 'mfccs':
 
             for idx in tqdm(range(len(self.file_list))):
 
                 vectors = ToyAdmos._feature_extraction_from_file(
-                    self.file_list[idx], self.extraction_type, self.n_mfcc, self.n_mel
-                )
-                vectors = vectors[::1, :]
-                if idx == 0:
-                    self.data = np.zeros(
-                        (
-                            len(self.file_list) * vectors.shape[0],
-                            1,
-                            self.n_mel,
-                            vectors.shape[-1],
-                        ),
-                        float,
-                    )
-                self.data[
-                    vectors.shape[0] * idx : vectors.shape[0] * (idx + 1), :
-                ] = vectors
-
-        elif self.extraction_type == "mfccs":
-
-            for idx in tqdm(range(len(self.file_list))):
-
-                vectors = MimiiDue._feature_extraction_from_file(
                     self.file_list[idx], self.extraction_type, self.n_mfcc, self.n_mel
                 )
                 vectors = vectors[::1, :]
@@ -226,7 +214,7 @@ class ToyAdmos(Dataset):
                         (
                             len(self.file_list) * n_objs,
                             1,
-                            self.n_mfcc,
+                            vectors.shape[1],
                             vectors.shape[-1],
                         ),
                         float,

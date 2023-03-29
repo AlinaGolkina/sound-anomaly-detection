@@ -127,10 +127,10 @@ def record_sound(
     """
     parameters:
     ----------
-        rate – Sampling rate (16000 by default)
-        channels – Number of channels (1 by default, mono)
-        frames_per_buffer – Specifies the number of frames per buffer
-        input_device_index – Index of Input Device to use.
+        rate - Sampling rate (16000 by default)
+        channels - Number of channels (1 by default, mono)
+        frames_per_buffer - Specifies the number of frames per buffer
+        input_device_index - Index of Input Device to use.
                              Unspecified (or None) uses default device.
                              Ignored if input is False.
 
