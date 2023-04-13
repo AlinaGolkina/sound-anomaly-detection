@@ -24,6 +24,8 @@ class MyDataset(Dataset):
     n_mfcc : int
         mel koeff q-ty
         40 - [default]
+    n_mel : int
+        224 - by default for melspectrogram size (1,224,224) lke a grey-scale image
 
     return:
     --------
@@ -43,7 +45,7 @@ class MyDataset(Dataset):
         dir_name_anomaly,
         extraction_type: str = "amplitude",
         n_mfcc: int = 40,
-        n_mel: int = 128,
+        n_mel: int = 224,
     ):
 
         self.target_dir = target_dir
@@ -62,7 +64,7 @@ class MyDataset(Dataset):
         return len(self.file_list)
 
     def __getitem__(self, idx) -> tuple:
-        return self.data[idx], self.labels[idx]
+        return self.data[idx], self.labels[idx], self.file_list[idx]
 
     def _init_file_list_generator(self):
         query_norm = Path(
@@ -91,7 +93,7 @@ class MyDataset(Dataset):
         """
         feature extractor
         """
-        y, sr = librosa.load(file, mono=True)
+        y, sr = librosa.load(file, sr=22050, mono=True)
 
         if extraction_type == "aggregate_features":
 
@@ -167,10 +169,10 @@ class MyDataset(Dataset):
             features = librosa.feature.melspectrogram(
                 y=y,
                 sr=sr,
-                n_fft=1024,
+                n_fft=2048, # 1024,
                 n_mels=n_mel,
                 win_length=1024,
-                hop_length=512,
+                hop_length=1084, # 512,
                 power=2.0,
             )
             features = features.reshape(-1, features.shape[0], features.shape[1])
